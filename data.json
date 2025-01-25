@@ -1,0 +1,76 @@
+{
+  "cameras": [
+    {
+      "name": "Big Buck Bunny",
+      "stream_url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+      "tags": ["animation", "classic", "demo"],
+      "online": true
+    },
+    {
+      "name": "Tears of Steel ISM",
+      "stream_url": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
+      "tags": ["sci-fi", "experimental", "adaptive streaming"],
+      "online": true
+    },
+    {
+      "name": "Apple FMP4",
+      "stream_url": "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8",
+      "tags": ["example", "fmp4", "adaptive bitrate"],
+      "online": true
+    },
+    {
+      "name": "Tears of Steel MP4",
+      "stream_url": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.mp4/.m3u8",
+      "tags": ["sci-fi", "mp4", "adaptive"],
+      "online": true
+    },
+    {
+      "name": "CNN Special Report, with CC",
+      "stream_url": "https://playertest.longtailvideo.com/adaptive/captions/playlist.m3u8",
+      "tags": ["news", "captions", "live"],
+      "online": true
+    },
+    {
+      "name": "LL-HLS Big Buck Bunny",
+      "stream_url": "https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8",
+      "tags": ["animation", "low latency", "classic"],
+      "online": true
+    },
+    {
+      "name": "DD+ with Dolby Atmos",
+      "stream_url": "https://ott.dolby.com/service_first/HLS_SDR_h264_FHD_2997_DDP_ATMOS/stream.m3u8",
+      "tags": ["Dolby Atmos", "DD+", "immersive audio"],
+      "online": true
+    },
+    {
+      "name": "DD+ 5.1-ch",
+      "stream_url": "https://ott.dolby.com/service_first/HLS_SDR_h264_FHD_2997_DDP_51/stream.m3u8",
+      "tags": ["Dolby Audio", "5.1 channel", "surround sound"],
+      "online": true
+    },
+    {
+      "name": "AC-4 Immersive Stereo",
+      "stream_url": "https://ott.dolby.com/service_first/HLS_SDR_h264_FHD_2997_AC4_IMS/stream.m3u8",
+      "tags": ["AC-4", "immersive stereo", "high quality"],
+      "online": true
+    },
+    {
+      "name": "AC-4 5.1-ch",
+      "stream_url": "https://ott.dolby.com/service_first/HLS_SDR_h264_FHD_2997_AC4_51/stream.m3u8",
+      "tags": ["AC-4", "5.1 channel", "Dolby Audio"],
+      "online": true
+    },
+    {
+      "name": "Akamai Zed",
+      "stream_url": "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
+      "tags": ["akamai", "live", "test"],
+      "online": false
+    },
+    {
+      "name": "Akamai HD",
+      "stream_url": "https://moctobpltc-i.akamaihd.net/hls/live/571329/eight/playlist.m3u8",
+      "tags": ["akamai", "HD", "live"],
+      "online": false
+    }
+  ]
+}
