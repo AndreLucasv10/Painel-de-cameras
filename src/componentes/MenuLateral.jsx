@@ -11,11 +11,11 @@ function MenuLateral({ cameras }) {
       p={4}
       borderRight="1px solid"
       borderColor="gray.700"
-      height="100vh"
-      position="fixed"
       top="0"
       left="0"
       boxShadow="lg"
+      height={'100vh'}
+      width={'300px'}
       transition="all 0.3s ease-in-out"
     >
       <Text
@@ -44,7 +44,7 @@ function MenuLateral({ cameras }) {
             }}
             transition="all 0.2s"
           >
-            <CameraItem camera={camera} />
+            <CameraItem camera={camera} onClick={() => aoClicarCamera(camera)} />
           </Stack>
         ))}
       </VStack>

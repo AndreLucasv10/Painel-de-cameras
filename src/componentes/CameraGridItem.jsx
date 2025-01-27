@@ -34,21 +34,22 @@ function CameraGridItem({ camera, index, onRemove }) {
   const isDragging = !!transform;
 
   return (
-    <Box
-      ref={setDroppableRef}
-
-      border="2px dashed"
-      borderColor={isOver ? 'teal.500' : 'gray.300'}
-      bg={isDragging ? 'teal.200' : isOver ? 'teal.100' : 'white'}
-      borderRadius="md"
-      textAlign="center"
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="space-between"
-      position="relative"
-      width="100%"
-    >
+      <Box
+        ref={setDroppableRef}
+        border="2px dashed"
+        borderColor={isOver ? 'teal.500' : 'gray.300'}
+        bg={isDragging ? 'teal.200' : isOver ? 'teal.100' : 'white'}
+        borderRadius="md"
+        textAlign="center"
+        display="flex"
+        // height="100"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="space-between"
+        position="relative"
+        maxW={'calc(100% - 8px)'}
+        style={{ aspectRatio: '16 / 9' }}
+      >
       {camera ? (
         <>
           <Box
@@ -57,7 +58,7 @@ function CameraGridItem({ camera, index, onRemove }) {
             {...attributes}
             style={style}
           >
-            <video ref={videoRef} width="100%" controls>
+            <video ref={videoRef} height={'100%'} width={'100%'}  controls>
               Seu navegador não suporta vídeos.
             </video>
             <Text fontSize="sm" color={camera.online ? 'green.500' : 'red.500'} mb={2}>
@@ -70,7 +71,7 @@ function CameraGridItem({ camera, index, onRemove }) {
             position="absolute"
             top="10px"
             right="10px"
-            zIndex="10"
+
           >
             X
           </Button>
