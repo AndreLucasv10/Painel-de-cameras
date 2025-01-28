@@ -45,200 +45,224 @@ function App() {
 
   const filteredCameras = camerasOrigem.filter((camera) => {
     const name = camera.name ? camera.name.toLowerCase() : '';
-    const tag = camera.tag ? camera.tag.toLowerCase() : '';
-
+    const tags = camera.tags ? camera.tags.map(tag => tag.toLowerCase()) : []; // Transformar tags em lowercase
+  
     const matchesName = name.includes(searchTerm.toLowerCase());
-    const matchesTag = tag.includes(searchTerm.toLowerCase());
-
+    const matchesTag = tags.some(tag => tag.includes(searchTerm.toLowerCase())); // Verificar se alguma tag corresponde
+  
     return matchesName || matchesTag;
   });
 
   const handleGridSizeChange = (value) => {
     const numericValue = parseInt(value, 10);
     setGridSize(numericValue);
-
+  
     const novoDestino = new Array(numericValue).fill(null);
-
+  
     camerasDestino.forEach((camera, index) => {
       if (camera !== null && index < numericValue) {
         novoDestino[index] = camera;
       }
     });
-
+  
     const camerasRestantes = camerasDestino.filter(
       (camera) => camera !== null && !novoDestino.includes(camera)
     );
-
+  
+    // Evitar duplicação ao adicionar câmeras removidas de volta
     setCamerasDestino(novoDestino);
     setCamerasOrigem((prev) => {
-      const novoOrigem = [...prev, ...camerasRestantes];
+      // Filtrando as câmeras removidas para garantir que não sejam duplicadas
+      const novoOrigem = [...prev, ...camerasRestantes.filter(camera => !prev.some(c => c.name === camera.name))];
       localStorage.setItem('camerasOrigem', JSON.stringify(novoOrigem));
       return novoOrigem;
     });
-
+  
     localStorage.setItem('camerasDestino', JSON.stringify(novoDestino));
   };
-  // Função para lidar com o arraste de câmeras
-const aoFinalizarArraste = ({ active, over }) => {
+  const aoFinalizarArraste = ({ active, over }) => {
+    if (!over) return;
+    let origemId;
+    if(active.id.includes("grid_")){
+      origemId = active.id.split("_")[1]
+    }else{
+      origemId = active.id
+    }
+    // const origemId = active.id; // ID da câmera arrastada
+    console.log(origemId)
+    const destinoIndex = parseInt(over.id, 10); // Index do destino no grid
   
-  if (!over) return;
-
-  const camerasCombinadas = camerasOrigem.concat(camerasDestino);
-  const cameraSelecionada = camerasCombinadas.find(
-    (camera) => camera && camera.name === active.id
-  );
-
-  const destinoIndex = parseInt(over.id, 10);
-
-  if (cameraSelecionada) {
-    const cameraDestino = camerasDestino[destinoIndex];
-    if (cameraDestino !== null) {
-      const cameraOriginalIndex = camerasDestino.findIndex(
-        (camera) => camera && camera.name === cameraSelecionada.name
-      );
-
-      if (cameraOriginalIndex !== -1) {
+    // Verificar se a câmera está na lista de origem
+    const cameraSelecionada = camerasOrigem.find((camera) => camera.name === origemId);
+  
+    // Verificar se o destino já tem uma câmera
+    const cameraNoDestino = camerasDestino[destinoIndex];
+  
+    // Se o destino já tiver uma câmera e a câmera que está sendo movida não for a mesma, permitir troca
+    if (cameraNoDestino && cameraNoDestino.name !== origemId) {
+      setCamerasDestino((prev) => {
+        const novoDestino = [...prev];
+        const origemIndex = prev.findIndex((camera) => camera?.name === origemId);
+        [novoDestino[origemIndex], novoDestino[destinoIndex]] = [
+          novoDestino[destinoIndex],
+          novoDestino[origemIndex],
+        ];
+        localStorage.setItem('camerasDestino', JSON.stringify(novoDestino));
+        return novoDestino;
+      });
+      return;
+    }
+  
+    // Caso a câmera esteja no grid, permitir que ela seja movida para posições vazias
+    const cameraNoGrid = camerasDestino.find((camera) => camera?.name === origemId);
+  
+    if (cameraNoGrid) {
+      // Se a posição de destino está vazia, mover a câmera para lá
+      if (!cameraNoDestino) {
         setCamerasDestino((prev) => {
           const novoDestino = [...prev];
-          novoDestino[cameraOriginalIndex] = cameraDestino;
-          novoDestino[destinoIndex] = cameraSelecionada;
+          const origemIndex = prev.findIndex((camera) => camera?.name === origemId);
+          novoDestino[origemIndex] = undefined;  // Remover a câmera da posição anterior
+          novoDestino[destinoIndex] = cameraNoGrid; // Mover a câmera para a posição vazia
           localStorage.setItem('camerasDestino', JSON.stringify(novoDestino));
           return novoDestino;
         });
+        return;
       }
-      return;
     }
-
-    if (camerasDestino.some((camera) => camera && camera.name === cameraSelecionada.name)) {
-      const cameraOriginalIndex = camerasDestino.findIndex(
-        (camera) => camera && camera.name === cameraSelecionada.name
-      );
+  
+    // Verificar se a câmera está na lista de origem e se não está desabilitada
+    if (cameraSelecionada && !cameraNoGrid && !cameraSelecionada.disabled) { // Certifique-se que a câmera não está desabilitada
+      // Adicionar ao grid apenas se não estiver e não estiver desabilitada
       setCamerasDestino((prev) => {
         const novoDestino = [...prev];
-        novoDestino[cameraOriginalIndex] = null;
+        novoDestino[destinoIndex] = cameraSelecionada; // Adicionar ao índice
+        localStorage.setItem('camerasDestino', JSON.stringify(novoDestino));
         return novoDestino;
       });
+  
+      // Atualizar lista de origem para desabilitar a câmera
+      setCamerasOrigem((prev) =>
+        prev.map((camera) =>
+          camera.name === cameraSelecionada.name
+            ? { ...camera, disabled: true }
+            : camera
+        )
+      );
+      localStorage.setItem(
+        'camerasOrigem',
+        JSON.stringify(
+          camerasOrigem.map((camera) =>
+            camera.name === cameraSelecionada.name
+              ? { ...camera, disabled: true }
+              : camera
+          )
+        )
+      );
     }
+  };
+  
+  
 
-    setCamerasDestino((prev) => {
-      const novoDestino = [...prev];
-      novoDestino[destinoIndex] = cameraSelecionada;
-      localStorage.setItem('camerasDestino', JSON.stringify(novoDestino));
-      return novoDestino;
-    });
-
-    if (!camerasDestino.some((camera) => camera && camera.name === cameraSelecionada.name)) {
-      setCamerasOrigem((prev) => {
-        const novoOrigem = prev.filter(
-          (camera) => camera && camera.name !== cameraSelecionada.name
-        );
-        localStorage.setItem('camerasOrigem', JSON.stringify(novoOrigem));
-        return novoOrigem;
+  const adicionarCameraAoGrid = (camera) => {
+    const proximoEspacoVazio = camerasDestino.findIndex((item) => item === null);
+  
+    if (proximoEspacoVazio !== -1) {
+      setCamerasDestino((prev) => {
+        const novoDestino = [...prev];
+        novoDestino[proximoEspacoVazio] = camera;
+        console.log('Câmera adicionada ao grid:', novoDestino);
+        localStorage.setItem('camerasDestino', JSON.stringify(novoDestino));
+        return novoDestino;
       });
+  
+      setCamerasOrigem((prev) =>
+        prev.map((item) =>
+          item.name === camera.name ? { ...item, disabled: true } : item
+        )
+      );
+    } else {
+      console.warn('Grid cheio! Não é possível adicionar mais câmeras.');
     }
-  }
-};
-
-  const removerCameraDoGrid = (indice) => {    
+  };
+  const removerCameraDoGrid = (indice) => {
     setCamerasDestino((prev) => {
       const novoDestino = [...prev];
       const cameraRemovida = novoDestino[indice];
-
-      novoDestino[indice] = null;
-
+  
       if (cameraRemovida) {
-        setCamerasOrigem((prevOrigem) => {
-          const novaOrigem = [...prevOrigem, cameraRemovida];
-          localStorage.setItem('camerasOrigem', JSON.stringify(novaOrigem));
-          return novaOrigem;
-        });
+        // Reativar câmera na lista
+        setCamerasOrigem((prevOrigem) =>
+          prevOrigem.map((camera) =>
+            camera.name === cameraRemovida.name
+              ? { ...camera, disabled: false }
+              : camera
+          )
+        );
+  
+        localStorage.setItem(
+          'camerasOrigem',
+          JSON.stringify(
+            camerasOrigem.map((camera) =>
+              camera.name === cameraRemovida.name
+                ? { ...camera, disabled: false }
+                : camera
+            )
+          )
+        );
       }
-
+  
+      novoDestino[indice] = null;
       localStorage.setItem('camerasDestino', JSON.stringify(novoDestino));
       return novoDestino;
-    });
-  };
-  const aoClicarCamera = (cameraSelecionada) => {
-    console.log()
-    setClickCount((prevCount) => {
-      const novoCount = prevCount + 1;
-      
-      if (novoCount === 2) {
-        // Adicionar a câmera ao grid
-        setCamerasDestino((prev) => {
-          const novoDestino = [...prev];
-          
-          // Encontrar o próximo espaço vazio no grid
-          const indiceVazio = novoDestino.findIndex((camera) => camera === null);
-          
-          if (indiceVazio !== -1) {
-            // Colocar a câmera no próximo espaço vazio
-            novoDestino[indiceVazio] = cameraSelecionada;
-            localStorage.setItem('camerasDestino', JSON.stringify(novoDestino));
-          }
-          
-          // Ordenar o grid após adicionar a câmera
-          const camerasOrdenadas = novoDestino.filter((camera) => camera !== null);
-          camerasOrdenadas.sort((a, b) => a.name.localeCompare(b.name));  // Ordenação de exemplo
-          
-          // Preencher posições restantes com null
-          const camerasComGrid = [...camerasOrdenadas, ...new Array(gridSize - camerasOrdenadas.length).fill(null)];
-          
-          // Atualizar o estado e salvar no localStorage
-          localStorage.setItem('camerasDestino', JSON.stringify(camerasComGrid));
-          return camerasComGrid;
-        });
-        
-        // Resetar contador de cliques
-        setClickCount(0);
-      }
-      
-      return novoCount;
     });
   };
 
   return (
     <ChakraProvider value={system}>
-      <Box overflowY={'auto'}>
-      <Stack spacing={6}>
-        {carregando ? (
-          <Spinner size="xl" color="teal.500" />
-        ) : (
-          <DndContext onDragEnd={aoFinalizarArraste}  >
-            <Box display={'flex'} onDoubleClick={aoFinalizarArraste} >
-            <MenuLateral cameras={filteredCameras} aoClicarCamera={aoClicarCamera}  />
-             <Box  mr={10}  mb={2} width={'100%'} mt={8}>
-              <Text fontSize="xl" mb={4} fontWeight="semibold">
-                Grid de Câmeras
-              </Text>
-              <Box display="flex" flexDirection="row" alignItems="center" mb={4}>
-                <Input
-                  placeholder="Digite aqui a Tag ou Nome da Camera"
-                  value={searchTerm}
-                  maxW="70%"
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                <NativeSelectRoot maxW="30%">
-                  <NativeSelectField
-                    placeholder="Selecione o tamanho do grid"
-                    value={gridSize}
-                    onChange={(e) => handleGridSizeChange(e.currentTarget.value)}
-                    >
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="4">4</option>
-                    <option value="6">6</option>
-                    <option value="12">12</option>
-                  </NativeSelectField>
-                </NativeSelectRoot>
-              </Box>
-              <CameraGrid cameras={camerasDestino} onRemove={removerCameraDoGrid} gridSize={gridSize} />
-              </Box>
+<Box>
+  <Stack spacing={6}>
+    {carregando ? (
+      <Spinner size="xl" color="teal.500" />
+    ) : (
+      <DndContext onDragEnd={aoFinalizarArraste}>
+        <Box display={'flex'} onDoubleClick={aoFinalizarArraste}>
+          <Box
+            flex="1"
+            // overflowY="auto"  // Adicionado overflow para permitir rolagem no menu lateral
+            // maxHeight="calc(100vh - 40px)" // Define a altura máxima do menu lateral
+          >
+            <MenuLateral
+              cameras={filteredCameras}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              aoClicarCamera={adicionarCameraAoGrid}
+              camerasDestino={camerasDestino}
+            />
+          </Box> 
+          <Box mr={10} mb={2} width={'100%'} mt={8}>
+            <Box display="flex" flexDirection="row" alignItems="center" mb={4} gap={2} ml={10}>
+              <NativeSelectRoot >
+                <NativeSelectField
+                  placeholder="Selecione o tamanho do grid"
+                  value={gridSize}
+                  onChange={(e) => handleGridSizeChange(e.currentTarget.value)}
+                >
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="4">4</option>
+                  <option value="6">6</option>
+                  <option value="12">12</option>
+                </NativeSelectField>
+              </NativeSelectRoot>
             </Box>
-          </DndContext>
-        )}
-      </Stack>
+            <CameraGrid cameras={camerasDestino} onRemove={removerCameraDoGrid} gridSize={gridSize} />
+          </Box>
         </Box>
+      </DndContext>
+    )}
+  </Stack>
+</Box>
     </ChakraProvider>
   );
 }

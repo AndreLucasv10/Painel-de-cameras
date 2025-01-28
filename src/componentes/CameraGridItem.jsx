@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Box, Text, Button } from '@chakra-ui/react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import Hls from 'hls.js';
-
+import { AspectRatio } from "@chakra-ui/react"
 function CameraGridItem({ camera, index, onRemove }) {
   const videoRef = useRef(null);
 
@@ -21,7 +21,7 @@ function CameraGridItem({ camera, index, onRemove }) {
 
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({ id: index });
   const { attributes, listeners, setNodeRef: setDraggableRef, transform } = useDraggable({
-    id: camera ? camera.name : index,
+    id: camera ? 'grid_' + camera.name : index,
   });
 
   const style = {
@@ -34,22 +34,26 @@ function CameraGridItem({ camera, index, onRemove }) {
   const isDragging = !!transform;
 
   return (
+    <Box>
       <Box
         ref={setDroppableRef}
         border="2px dashed"
-        borderColor={isOver ? 'teal.500' : 'gray.300'}
+        borderColor={isOver ? 'teal.600' : 'gray.300'}
         bg={isDragging ? 'teal.200' : isOver ? 'teal.100' : 'white'}
         borderRadius="md"
-        textAlign="center"
+        textAlign="center"  
+        margin={0}
         display="flex"
-        // height="100"
         flexDirection="column"
         alignItems="center"
         justifyContent="space-between"
         position="relative"
         maxW={'calc(100% - 8px)'}
+        bgColor={'gray.200'}
+        
+        
         style={{ aspectRatio: '16 / 9' }}
-      >
+        >
       {camera ? (
         <>
           <Box
@@ -57,12 +61,10 @@ function CameraGridItem({ camera, index, onRemove }) {
             {...listeners}
             {...attributes}
             style={style}
-          >
-            <video ref={videoRef} height={'100%'} width={'100%'}  controls>
-              Seu navegador não suporta vídeos.
-            </video>
-            <Text fontSize="sm" color={camera.online ? 'green.500' : 'red.500'} mb={2}>
-            </Text>
+            >
+            <AspectRatio ratio={16 / 9}>
+            <video  ref={videoRef}  controls> </video>
+            </AspectRatio>
           </Box>
           <Button
             colorScheme="red"
@@ -71,15 +73,15 @@ function CameraGridItem({ camera, index, onRemove }) {
             position="absolute"
             top="10px"
             right="10px"
-
-          >
+            >
             X
           </Button>
         </>
       ) : (
-        <Text color="gray.600">Arraste uma Câmera aqui</Text>
+        <Text  margin={"auto"} fontWeight={'bold'}  color="gray.600">Arraste uma Câmera aqui</Text>
       )}
     </Box>
+  </Box>
   );
 }
 export default CameraGridItem;

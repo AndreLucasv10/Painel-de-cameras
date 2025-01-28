@@ -16,8 +16,11 @@ function CameraGrid({ cameras, onRemove, isMobile, gridSize }) {
     <Box
       display="grid"
       gridTemplateColumns={getGridColumns(gridSize)}
-      gap={4}
+      gap={2}
+      ml={10}
+
     >
+      
       {cameras.slice(0, gridSize).map((camera, index) => (
         <CameraGridItem
           key={index}
